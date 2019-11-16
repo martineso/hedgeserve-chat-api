@@ -6,12 +6,18 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
-      }
+      },
+      name: DataTypes.TEXT
     },
-    {
-      freezeTableName: true
-    }
+    {}
   );
+
+  Chat.associate = models => {
+    Chat.belongsToMany(models.user, {
+      through: "chatUser",
+      foreignKey: "userId"
+    });
+  };
 
   return Chat;
 };

@@ -1,12 +1,14 @@
 const express = require("express");
 const router = express.Router();
+const db = require("../../../db/models");
 
 /**
  * Returns chat info
  */
-router.get("/:chatId", (req, res, next) => {
+router.get("/:chatId", async (req, res, next) => {
   const { chatId } = req.params;
-
+  const user = await db.user.findAll();
+  console.log(user);
   res.json({
     chatId
   });

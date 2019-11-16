@@ -7,14 +7,11 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true
       },
-      chatId: {},
-      messageId: {},
-      from: {},
-      to: {}
+      messageId: DataTypes.INTEGER,
+      from: DataTypes.INTEGER,
+      to: DataTypes.INTEGER
     },
-    {
-      freezeTableName: true
-    }
+    {}
   );
 
   return ChatMessage;
