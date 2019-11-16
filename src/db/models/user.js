@@ -9,8 +9,14 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true
       },
-      firstName: DataTypes.STRING,
-      lastName: DataTypes.STRING
+      firstName: {
+        type: DataTypes.STRING,
+        unique: false
+      },
+      lastName: {
+        type: DataTypes.STRING,
+        unique: false
+      }
     },
     {}
   );

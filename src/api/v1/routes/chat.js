@@ -7,10 +7,12 @@ const db = require("../../../db/models");
  */
 router.get("/:chatId", async (req, res, next) => {
   const { chatId } = req.params;
-  const user = await db.user.findAll();
-  console.log(user);
+  const users = await db.user.findAll({
+    include: { model: db.chat }
+  });
   res.json({
-    chatId
+    chatId,
+    users
   });
 });
 
