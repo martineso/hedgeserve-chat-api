@@ -9,7 +9,7 @@ const Sequelize = db.Sequelize;
  * as parameter
  */
 router.post("/", async (req, res, next) => {
-  const { name, participants = [] } = req.body;
+  const { name, authorId, participants = [] } = req.body;
 
   const chat = await db.chat.create({ name });
   if (!chat) {
@@ -26,10 +26,35 @@ router.post("/", async (req, res, next) => {
   } catch (err) {
     if (err instanceof Sequelize.ForeignKeyConstraintError) {
       return next(createError(400, "Invalid params!"));
+    } else if (err instanceof Sequelize.DatabaseError) {
+      return next(createError(500));
     }
   }
 
   res.status(201).json(chat);
+});
+
+/**
+ * Adds a list of participants to the selected chat
+ */
+router.put("/:chatId/participants", async (req, res, next) => {
+  const { chatId } = req.params;
+  const { participants = [] } = req.body;
+
+  const chatParticipants = participants.map(participant => ({
+    userId: participant,
+    chatId
+  }));
+
+  try {
+    await db.chatParticipant.bulkCreate(chatParticipants);
+  } catch (err) {
+    if (err instanceof Sequelize.ForeignKeyConstraintError) {
+      return next(createError(400, "Invalid participant or invalid chatId!"));
+    }
+  }
+
+  res.status(201).json();
 });
 
 /**
@@ -53,11 +78,16 @@ router.get("/:chatId", async (req, res, next) => {
     ]
   });
 
-  res.json(chat || {});
+  let status = 200;
+  if (!chat) {
+    status = 204;
+  }
+
+  res.status(status).json(chat || {});
 });
 
 /**
- * Deletes this chat
+ * Deletes a chat
  */
 router.delete("/:chatId", async (req, res, next) => {
   const { chatId } = req.params;
@@ -75,60 +105,76 @@ router.delete("/:chatId", async (req, res, next) => {
 });
 
 /**
- * Returns all messages for this chat
+ * Returns all messages for a chat
  */
-router.get("/:chatId/messages", (req, res, next) => {
+router.get("/:chatId/messages", async (req, res, next) => {
   const { chatId } = req.params;
 
-  const result = db.chat.findAll({
+  const result = await db.message.findAll({
     where: {
-      id: chatId
+      chatId
     }
   });
 
-  res.json({
-    result
-  });
+  let status = 200;
+  if (!result) {
+    status = 204;
+  }
+
+  res.status(status).json(result);
 });
 
 /**
- * Returns a single message
- */
-router.get("/:chatId/messages/:messageId", (req, res, next) => {
-  const { chatId, messageId } = req.params;
-
-  res.json({
-    chatId
-  });
-});
-
-/**
- * Sends a single message
+ * Sends a single message to the specified chat
  */
 router.post("/:chatId/messages", async (req, res, next) => {
   const { chatId } = req.params;
-  const { message, recepientId, senderId = 1 } = req.body;
+  const { text, senderId } = req.body;
 
-  const result = db.message.create({
-    from: senderId,
-    text: message,
-    chatId
-  });
+  if (!senderId) {
+    return next(createError(400, "Param [senderId] is required!"));
+  }
 
-  res.json({
-    chatId
-  });
+  if (!text || !("" + text).trim()) {
+    return next(createError(400, "Param [text] is required!"));
+  }
+
+  let message = null;
+  try {
+    message = await db.message.create({
+      from: senderId,
+      text,
+      chatId
+    });
+  } catch (err) {
+    console.log(err);
+    return next(createError(400, "Invalid params!"));
+  }
+
+  res.status(201).json(message);
 });
 
 /**
  * Deletes a single message
  */
-router.delete("/:chatId/messages/:messageId", (req, res, next) => {
+router.delete("/:chatId/messages/:messageId", async (req, res, next) => {
   const { messageId } = req.params;
 
-  res.json({
-    chatId
-  });
+  try {
+    const result = await db.message.destroy({
+      where: {
+        id: messageId
+      }
+    });
+
+    if (!result) {
+      return next(createError(400, "Invalid message id!"));
+    }
+  } catch (err) {
+    return next(createError(500));
+  }
+
+  res.status(204).json();
 });
 
 module.exports = router;

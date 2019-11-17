@@ -13,5 +13,10 @@ module.exports = (sequelize, DataTypes) => {
     {}
   );
 
+  ChatParticipant.associate = models => {
+    ChatParticipant.hasMany(models.message, {
+      foreignKey: "from"
+    });
+  };
   return ChatParticipant;
 };

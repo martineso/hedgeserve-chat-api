@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
       through: models.chatParticipant,
       foreignKey: "chatId"
     });
+
+    Chat.hasMany(models.message, {
+      foreignKey: "chatId"
+    });
   };
 
   return Chat;

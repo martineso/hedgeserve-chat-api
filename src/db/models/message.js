@@ -15,7 +15,12 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Message.associate = models => {
-    Message.hasMany(models.chatParticipant, {
+    Message.belongsTo(models.chatParticipant, {
+      foreignKey: "from",
+      targetKey: "id"
+    });
+
+    Message.belongsTo(models.chat, {
       foreignKey: "chatId"
     });
   };
