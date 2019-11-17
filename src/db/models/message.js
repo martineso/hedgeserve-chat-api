@@ -7,10 +7,17 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true
       },
-      text: DataTypes.TEXT
+      text: DataTypes.TEXT,
+      from: DataTypes.INTEGER,
+      chatId: DataTypes.INTEGER
     },
     {}
   );
 
+  Message.associate = models => {
+    Message.hasMany(models.chatParticipant, {
+      foreignKey: "chatId"
+    });
+  };
   return Message;
 };

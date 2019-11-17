@@ -7,15 +7,11 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true
       },
-      chatId: DataTypes.INTEGER,
-      userId: DataTypes.INTEGER
+      userId: DataTypes.INTEGER,
+      chatId: DataTypes.INTEGER
     },
     {}
   );
-
-  //   ChatParticipant.associate = models => {
-  //     ChatParticipant.hasMany(models.user);
-  //   };
 
   return ChatParticipant;
 };

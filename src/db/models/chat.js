@@ -14,8 +14,8 @@ module.exports = (sequelize, DataTypes) => {
 
   Chat.associate = models => {
     Chat.belongsToMany(models.user, {
-      through: "chatUser",
-      foreignKey: "userId"
+      through: models.chatParticipant,
+      foreignKey: "chatId"
     });
   };
 
