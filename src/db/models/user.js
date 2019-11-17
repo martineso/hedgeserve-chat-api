@@ -27,6 +27,10 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "userId",
       otherKey: "chatId"
     });
+
+    User.hasOne(models.chatParticipant, {
+      foreignKey: "userId"
+    });
   };
 
   return User;

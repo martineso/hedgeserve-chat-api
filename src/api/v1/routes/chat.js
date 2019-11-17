@@ -35,29 +35,6 @@ router.post("/", async (req, res, next) => {
 });
 
 /**
- * Adds a list of participants to the selected chat
- */
-router.put("/:chatId/participants", async (req, res, next) => {
-  const { chatId } = req.params;
-  const { participants = [] } = req.body;
-
-  const chatParticipants = participants.map(participant => ({
-    userId: participant,
-    chatId
-  }));
-
-  try {
-    await db.chatParticipant.bulkCreate(chatParticipants);
-  } catch (err) {
-    if (err instanceof Sequelize.ForeignKeyConstraintError) {
-      return next(createError(400, "Invalid participant or invalid chatId!"));
-    }
-  }
-
-  res.status(201).json();
-});
-
-/**
  * Returns chat info
  */
 router.get("/:chatId", async (req, res, next) => {
@@ -101,7 +78,30 @@ router.delete("/:chatId", async (req, res, next) => {
     return next(createError(500));
   }
 
-  res.status(200).json();
+  res.status(204).json();
+});
+
+/**
+ * Adds a list of participants to the selected chat
+ */
+router.put("/:chatId/participants", async (req, res, next) => {
+  const { chatId } = req.params;
+  const { participants = [] } = req.body;
+
+  const chatParticipants = participants.map(participant => ({
+    userId: participant,
+    chatId
+  }));
+
+  try {
+    await db.chatParticipant.bulkCreate(chatParticipants);
+  } catch (err) {
+    if (err instanceof Sequelize.ForeignKeyConstraintError) {
+      return next(createError(400, "Invalid participant or invalid chatId!"));
+    }
+  }
+
+  res.status(201).json();
 });
 
 /**
@@ -113,6 +113,12 @@ router.get("/:chatId/messages", async (req, res, next) => {
   const result = await db.message.findAll({
     where: {
       chatId
+    },
+    include: {
+      model: db.chatParticipant,
+      include: {
+        model: db.user
+      }
     }
   });
 
